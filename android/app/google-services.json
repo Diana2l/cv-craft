@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "683112036706",
+    "project_id": "cvcraft-98508",
+    "storage_bucket": "cvcraft-98508.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:683112036706:android:15cc89ca2273491c19143b",
+        "android_client_info": {
+          "package_name": "com.example.cv_craft"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "683112036706-jkejkh5is11onl5fm7688v23da19f3b1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsXjZYkHKavQp-jWACArsoHkACSJr7hSo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "683112036706-jkejkh5is11onl5fm7688v23da19f3b1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "683112036706-19pioovk5d6momc42eku31j96d9jntkj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cv_craft"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
