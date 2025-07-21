@@ -63,7 +63,6 @@ class _UserpageState extends State<Userpage> {
     return  Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal,
-        title: Text('CV Builder'),
          actions: [
           IconButton(
             icon: const Icon(Icons.settings),

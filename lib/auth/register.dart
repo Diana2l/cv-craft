@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cv_craft/auth/login.dart';
-import 'package:cv_craft/screens/userpage.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -59,12 +58,10 @@ class RegisterState extends State<Register> {
         ),
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Userpage(),
-        ),
-      );
+      // After successful registration, navigate to template selection
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/templates');
+      }
     } catch (e) {
       print("Error: ${e.toString()}");
       ScaffoldMessenger.of(context).showSnackBar(

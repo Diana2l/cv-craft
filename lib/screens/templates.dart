@@ -9,16 +9,80 @@ import 'package:cv_craft/models/modern.dart';
 import 'package:cv_craft/models/technical.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:cv_craft/home.dart';
+import 'package:cv_craft/screens/Build.dart';
 
-class Templates extends StatelessWidget {
-  final List<String> templates = [
-    'assets/images/Modern.png',
-    'assets/images/creative.png',
-    'assets/images/minimalist.png',
-    'assets/images/classic.png',
-    'assets/images/technical.png',
+class Templates extends StatefulWidget {
+  const Templates({Key? key}) : super(key: key);
+
+  @override
+  _TemplatesState createState() => _TemplatesState();
+}
+
+final List<String> templates = [
+  'assets/images/Modern.png',
+  'assets/images/creative.png',
+  'assets/images/minimalist.png',
+  'assets/images/classic.png',
+  'assets/images/technical.png',
+];
+
+class _TemplatesState extends State<Templates> {
+  int _selectedIndex = 1; // Templates tab is selected by default
+
+  final List<Widget> _pages = [
+    Home(),
+    TemplatesContent(),
+    Build(
+      fontSize: 16, 
+      fontFamily: 'OpenSans', 
+      color: Colors.red, 
+      headerFontSize: 24, 
+      objective: '', 
+      template: '', 
+      templateImage: ''
+    ),
   ];
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.teal,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Home',
+            activeIcon: Icon(Icons.home),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.widgets_outlined),
+            label: 'Templates',
+            activeIcon: Icon(Icons.widgets),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.create_outlined),
+            label: 'Create',
+            activeIcon: Icon(Icons.create),
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.white,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+      ),
+    );
+  }
+}
+
+class TemplatesContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,6 +90,8 @@ class Templates extends StatelessWidget {
         title: Text('Pick A Template!'),
         centerTitle: true,
         automaticallyImplyLeading: false,
+        backgroundColor: Colors.teal,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

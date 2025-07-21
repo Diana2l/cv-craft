@@ -14,6 +14,8 @@ import 'package:cv_craft/screens/profile.dart';
 import 'package:cv_craft/screens/settings.dart';
 import 'package:cv_craft/screens/skills.dart';
 import 'package:cv_craft/screens/userpage.dart';
+import 'package:cv_craft/screens/onboarding_screen.dart';
+import 'package:cv_craft/screens/template_selection_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,16 +52,29 @@ class _MyAppState extends State<MyApp> {
       title: 'CV Builder',
       debugShowCheckedModeBanner: false,
       theme: changeTheme(globals.isDarkMode),
-     // Provider.of<ThemeProvider>(context).isDarkMode ? ThemeData.dark() : ThemeData.light(),
-      home: Settings(onThemeChanged: (bool ) { 
-        
-       },),
-      initialRoute: '/auth/register',
+      home: FutureBuilder<bool>(
+        future: _checkFirstLaunch(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else {
+            return snapshot.data == true 
+                ? const OnboardingScreen() 
+                : const TemplateSelectionScreen();
+          }
+        },
+      ),
       routes: {
         '/auth/register': (context) => Register(),
         '/auth/login': (context) => Login(),
+        '/templates': (context) => TemplateSelectionScreen(),
         '/userpage': (context) => Userpage(),
-        '/settings': (context) => Settings(onThemeChanged: (bool ) {  },),
+        '/onboarding_screen': (context) => OnboardingScreen(),
+        '/settings': (context) => Settings(onThemeChanged: (bool) {}),
         '/profile': (context) => Profile(),
         '/build': (context) => Build(fontSize: 16, headerFontSize: 24, fontFamily: 'OpenSans', color:Colors.red, objective: '', template: '', templateImage: '',),
         '/objective': (context) => Objectives(),
@@ -68,10 +83,21 @@ class _MyAppState extends State<MyApp> {
         '/experience': (context) => Experience(),
         '/skills': (context) => Skills(),
         '/faq': (context) => FAQ(),
-        '/templates':(context) => Templates(),
       },
     );
   }
+  Future<bool> _checkFirstLaunch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
+    if (isFirstLaunch) {
+      await prefs.setBool('isFirstLaunch', false);
+      // On first launch, show onboarding
+      return true;
+    }
+    // After first launch, always go to template selection
+    return false;
+  }
+
   dynamic changeTheme(bool? value){
     print("-----------------------");
    setState((){
