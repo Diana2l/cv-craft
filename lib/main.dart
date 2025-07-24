@@ -15,7 +15,7 @@ import 'package:cv_craft/screens/settings.dart';
 import 'package:cv_craft/screens/skills.dart';
 import 'package:cv_craft/screens/userpage.dart';
 import 'package:cv_craft/screens/onboarding_screen.dart';
-import 'package:cv_craft/screens/template_selection_screen.dart';
+import 'package:cv_craft/screens/templates.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -64,14 +64,14 @@ class _MyAppState extends State<MyApp> {
           } else {
             return snapshot.data == true 
                 ? const OnboardingScreen() 
-                : const TemplateSelectionScreen();
+                : const Templates();
           }
         },
       ),
       routes: {
         '/auth/register': (context) => Register(),
         '/auth/login': (context) => Login(),
-        '/templates': (context) => TemplateSelectionScreen(),
+        '/templates': (context) => Templates(),
         '/userpage': (context) => Userpage(),
         '/onboarding_screen': (context) => OnboardingScreen(),
         '/settings': (context) => Settings(onThemeChanged: (bool) {}),
