@@ -15,7 +15,6 @@ import 'package:cv_craft/screens/settings.dart';
 import 'package:cv_craft/screens/skills.dart';
 import 'package:cv_craft/screens/userpage.dart';
 import 'package:cv_craft/screens/onboarding_screen.dart';
-import 'package:cv_craft/screens/templates.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
