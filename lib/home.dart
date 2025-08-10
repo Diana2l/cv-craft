@@ -1,19 +1,15 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_import, prefer_final_fields, unused_field, unused_import, avoid_unnecessary_containers
-
+import 'package:cv_craft/screens/about.dart';
 import 'package:flutter/material.dart';
-import 'package:cv_craft/screens/education.dart';
-import 'package:cv_craft/screens/experience.dart';
-import 'package:cv_craft/screens/objectives.dart';
-import 'package:cv_craft/screens/samples.dart';
-import 'package:cv_craft/screens/skills.dart';
-import 'package:cv_craft/screens/FAQ.dart';
-import 'package:cv_craft/screens/templates.dart';
-import 'package:cv_craft/screens/settings.dart';
-import 'package:cv_craft/screens/profile.dart';
-import 'package:cv_craft/auth/utility/globals.dart' as globals;
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cv_craft/screens/settings.dart';
+import 'package:cv_craft/screens/report_screen.dart';
+import 'package:cv_craft/screens/samples.dart';
+import 'package:cv_craft/screens/cv_editor_screen.dart';
+import 'package:cv_craft/auth/login.dart';
+import 'package:cv_craft/screens/userpage.dart';
+import 'package:cv_craft/models/cv_data.dart' as cv;
+import 'package:cv_craft/auth/utility/globals.dart' as globals;
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -23,380 +19,321 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  
+  String? _selectedTemplate;
+
   @override
   void initState() {
     super.initState();
-    // Load the selected template when the home screen loads
     _loadSelectedTemplate();
   }
 
   Future<void> _loadSelectedTemplate() async {
     final prefs = await SharedPreferences.getInstance();
-    final templateId = prefs.getString('selected_template');
-    
-    if (mounted) {
-      setState(() {
-        _selectedTemplate = templateId;
-      });
-    }
+    setState(() {
+      _selectedTemplate = prefs.getString('selected_template');
+    });
   }
 
-  String? _selectedTemplate;
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: _buildDrawer(context),
+      bottomNavigationBar: _buildBottomNav(context),
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: Text(
-          _selectedTemplate != null 
-              ? '${_selectedTemplate![0].toUpperCase()}${_selectedTemplate!.substring(1)} CV' 
-              : 'CV Craft',
+          'CV Craft',
           style: GoogleFonts.poppins(
-            fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: globals.isDarkMode ? Colors.white : Colors.black87,
+            color: globals.isDarkMode ? Colors.white : Colors.black,
           ),
         ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
         actions: [
           if (_selectedTemplate != null)
             IconButton(
               icon: Icon(Icons.swap_horiz, color: Colors.blue),
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/templates');
-              },
-              tooltip: 'Change Template',
+              onPressed: () => Navigator.pushReplacementNamed(context, '/templates'),
             ),
           IconButton(
             icon: Icon(Icons.settings, color: Colors.blue),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Settings(onThemeChanged: (bool) {})),
-              );
-            },
-            tooltip: 'Settings',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => Settings(onThemeChanged: (bool _) {})),
+            ),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_selectedTemplate == null) ...[
-              _buildWelcomeCard(),
-              SizedBox(height: 24),
-            ],
-            
-            // Quick Actions
-            Text(
-              'Quick Actions',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 16),
-            
-            // Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.add_circle_outline,
-                    label: 'New CV',
-                    onTap: () => Navigator.pushReplacementNamed(context, '/templates'),
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.person_outline,
-                    label: 'Profile',
-                    onTap: () => Navigator.pushNamed(context, '/personal'),
-                  ),
-                ),
-              ],
-            ),
-            
-            SizedBox(height: 32),
-            
-            // CV Sections
-            Text(
-              'Build Your CV',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 16),
-            
-            _buildSectionCard(
-              icon: Icons.person_outline,
-              title: 'Personal Info',
-              description: 'Add your personal details',
-              onTap: () => Navigator.pushNamed(context, '/personal'),
-            ),
-            _buildSectionCard(
-              icon: Icons.school_outlined,
-              title: 'Education',
-              description: 'Add your education history',
-              onTap: () => showDialog(
-                context: context,
-                builder: (BuildContext context) => Education(),
-              ),
-            ),
-            _buildSectionCard(
-              icon: Icons.work_outline,
-              title: 'Experience',
-              description: 'Add your work experience',
-              onTap: () => showDialog(
-                context: context,
-                builder: (BuildContext context) => Experience(),
-              ),
-            ),
-            _buildSectionCard(
-              icon: Icons.stars_outlined,
-              title: 'Skills',
-              description: 'Add your skills and expertise',
-              onTap: () => showDialog(
-                context: context,
-                builder: (BuildContext context) => Skills(),
-              ),
-            ),
-            
-            SizedBox(height: 24),
-            
-            // Templates Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Templates',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/templates'),
-                  child: Text(
-                    'See All',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ],
-            ),
-            
-            SizedBox(height: 16),
-            
-            // Template Previews
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildTemplatePreview('Classic', 'assets/images/classic_template.png'),
-                  SizedBox(width: 16),
-                  _buildTemplatePreview('Modern', 'assets/images/modern_template.png'),
-                  SizedBox(width: 16),
-                  _buildTemplatePreview('Creative', 'assets/images/creative_template.png'),
-                ],
-              ),
-            ),
-            
-            SizedBox(height: 32),
+            _buildHeroSection(),
+            const SizedBox(height: 20),
+            _buildProgressTracker(0.6), // Example: 60% CV completed
+            const SizedBox(height: 24),
+            _buildQuickActions(context),
+            const SizedBox(height: 24),
+            _buildTemplatesCarousel(),
+            const SizedBox(height: 24),
+            _buildTipsSection(),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, '/templates'),
-        label: Text('Create New CV'),
-        icon: Icon(Icons.add),
-        backgroundColor: Colors.blue,
       ),
     );
   }
 
-  Widget _buildWelcomeCard() {
+  // 🔹 Drawer
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(color: Colors.blueGrey),
+            child: Text('Welcome!'),
+          ),
+          _drawerItem(Icons.home, 'Home', () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => Userpage()),
+          )),
+          _drawerItem(Icons.settings, 'Settings', () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => Settings(onThemeChanged: (bool _) {})),
+          )),
+          _drawerItem(Icons.report, 'Reports', () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => ReportScreen(cvData: cv.CVData())),
+          )),
+          _drawerItem(Icons.type_specimen, 'CV + Cover Letter', () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CVEditorScreen(
+                fontSize: 16,
+                headerFontSize: 24,
+                fontFamily: 'OpenSans',
+                color: Colors.teal,
+                objective: '',
+                template: 'modern',
+                templateImage: 'assets/images/Modern.png',
+              ),
+            ),
+          )),
+          _drawerItem(Icons.info, 'About Us', () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => About()),
+          )),
+          _drawerItem(Icons.logout, 'Log Out', () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => Login()),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerItem(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(leading: Icon(icon), title: Text(title), onTap: onTap);
+  }
+
+  // 🔹 Bottom Navigation
+  Widget _buildBottomNav(BuildContext context) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: 0,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.widgets), label: 'Templates'),
+        BottomNavigationBarItem(icon: Icon(Icons.create), label: 'Create'),
+      ],
+      onTap: (index) {
+        if (index == 1) {
+          Navigator.pushReplacementNamed(context, '/templates');
+        } else if (index == 2) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CVEditorScreen(
+                fontSize: 16,
+                headerFontSize: 24,
+                fontFamily: 'OpenSans',
+                color: Colors.teal,
+                objective: '',
+                template: 'modern',
+                templateImage: 'assets/images/Modern.png',
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  // 🔹 Hero Section
+  Widget _buildHeroSection() {
     return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade600, Colors.blue.shade400],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: LinearGradient(colors: [Colors.blue, Colors.blueAccent]),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.2),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Welcome Back!',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Ready to build your perfect CV?',
-            style: GoogleFonts.poppins(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 16,
-            ),
-          ),
-          SizedBox(height: 16),
+          Text('Welcome Back!', style: GoogleFonts.poppins(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text('Let’s create your perfect CV today!', style: GoogleFonts.poppins(color: Colors.white70)),
+          const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => Navigator.pushNamed(context, '/templates'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: Text(
-              'Create New CV',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 28, color: Colors.blue),
-            SizedBox(height: 8),
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionCard({
-    required IconData icon,
-    required String title,
-    required String description,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      margin: EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: Colors.blue),
-        ),
-        title: Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Text(
-          description,
-          style: GoogleFonts.poppins(
-            color: Colors.grey[600],
-            fontSize: 14,
-          ),
-        ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      ),
-    );
-  }
-
-  Widget _buildTemplatePreview(String title, String imagePath) {
-    return GestureDetector(
-      onTap: () => Navigator.pushReplacementNamed(context, '/templates'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 180,
-            height: 240,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.grey[200],
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.blue),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CVEditorScreen(
+                    fontSize: 16,
+                    headerFontSize: 24,
+                    fontFamily: 'OpenSans',
+                    color: Colors.teal,
+                    objective: '',
+                    template: 'modern',
+                    templateImage: 'assets/images/Modern.png',
+                  ),
                 ),
-              ],
-              image: DecorationImage(
-                image: AssetImage('assets/images/cv_preview_1.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
-          ),
+              );
+            },
+            child: const Text('Get Started'),
+          )
         ],
       ),
     );
   }
-  
+
+  // 🔹 Progress Tracker
+  Widget _buildProgressTracker(double progress) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Your CV Progress', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        LinearProgressIndicator(value: progress, backgroundColor: Colors.grey[200], color: Colors.blue),
+        const SizedBox(height: 4),
+        Text('${(progress * 100).toStringAsFixed(0)}% Complete', style: GoogleFonts.poppins(fontSize: 12)),
+      ],
+    );
+  }
+
+  // 🔹 Quick Actions
+  Widget _buildQuickActions(BuildContext context) {
+    return Row(
+      children: [
+        _quickAction(Icons.add_circle_outline, 'New CV', Colors.green, () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CVEditorScreen(
+                fontSize: 16,
+                headerFontSize: 24,
+                fontFamily: 'OpenSans',
+                color: Colors.teal,
+                objective: '',
+                template: 'modern',
+                templateImage: 'assets/images/Modern.png',
+              ),
+            ),
+          );
+        }),
+        const SizedBox(width: 16),
+        _quickAction(Icons.report, 'Reports', Colors.orange, () => Navigator.pushNamed(context, '/report_screen')),
+      ],
+    );
+  }
+
+  Widget _quickAction(IconData icon, String label, Color color, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 30),
+              const SizedBox(height: 8),
+              Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Templates Carousel
+  Widget _buildTemplatesCarousel() {
+    final templates = [
+      {'title': 'Classic', 'image': 'assets/images/classic.png'},
+      {'title': 'Modern', 'image': 'assets/images/Modern.png'},
+      {'title': 'Creative', 'image': 'assets/images/creative.png'},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text('Templates', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+          TextButton(onPressed: () => Navigator.pushNamed(context, '/templates'), child: const Text('See All'))
+        ]),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 250,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: templates.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final template = templates[index];
+              return GestureDetector(
+                onTap: () => Navigator.pushReplacementNamed(context, '/templates'),
+                child: Container(
+                  width: 180,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(image: AssetImage(template['image']!), fit: BoxFit.cover),
+                    boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
+                  ),
+                  alignment: Alignment.bottomLeft,
+                  padding: const EdgeInsets.all(8),
+                  child: Text(template['title']!, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, backgroundColor: Colors.black45)),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 🔹 Tips Section
+  Widget _buildTipsSection() {
+    final tips = [
+      'Keep your CV concise and clear.',
+      'Highlight achievements, not just duties.',
+      'Use action verbs to describe experience.',
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('CV Tips & Inspiration', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        ...tips.map((tip) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: const Icon(Icons.lightbulb, color: Colors.amber),
+                title: Text(tip, style: GoogleFonts.poppins()),
+              ),
+            )),
+      ],
+    );
+  }
 }

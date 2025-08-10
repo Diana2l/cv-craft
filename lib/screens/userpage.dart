@@ -1,8 +1,9 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, library_private_types_in_public_api, prefer_typing_uninitialized_variables, avoid_types_as_parameter_names, unused_import, non_constant_identifier_names, sort_child_properties_last
+// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, library_private_types_in_public_api, prefer_typing_uninitialized_variables, avoid_types_as_parameter_names, unused_import, non_constant_identifier_names, sort_child_properties_last, file_names
 
 import 'package:flutter/material.dart';
 import 'package:cv_craft/auth/login.dart';
 import 'package:cv_craft/home.dart';
+import 'package:cv_craft/screens/cv_editor_screen.dart';
 import 'package:cv_craft/screens/about.dart';
 import 'package:cv_craft/screens/profile.dart';
 import 'package:cv_craft/screens/samples.dart';
@@ -45,11 +46,18 @@ class _UserpageState extends State<Userpage> {
     
     
   ];
-  final List<Widget> _pages=[
+  final List<Widget> _pages = [
     Home(),
-      Templates(),
-      Build(fontSize: 16, fontFamily:'OpenSans', color: Colors.red, headerFontSize: 24, objective: '', template: '', templateImage: '',),
-      
+    Templates(),
+    CVEditorScreen(
+      fontSize: 16,
+      headerFontSize: 24,
+      fontFamily: 'OpenSans',
+      color: Colors.teal,
+      objective: '',
+      template: 'modern',
+      templateImage: 'assets/images/Modern.png',
+    ),
   ];
 
   void _onItemTapped(int index) {
@@ -84,56 +92,7 @@ class _UserpageState extends State<Userpage> {
       )]
         
       ),
-       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              child: Text('Welcome!'),
-              decoration: BoxDecoration(
-                color: Colors.blueGrey,
-              ),
-            ),
-            ListTile(
-              title: Text("Home"),
-              leading: Icon(Icons.home),
-              onTap: () {
-                 Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Userpage()));
-              },
-            ),
-         
-
-            ListTile(
-              title: Text("Settings"),
-              leading: Icon(Icons.settings),
-              onTap: () {
-                 Navigator.of(context).push(MaterialPageRoute(builder:(context) => Settings(onThemeChanged: (bool ) {  },)));
-              },
-            ),
-            ListTile(
-              title: Text("CV+CoverLetter"),
-              leading: Icon(Icons.type_specimen),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Samples()));
-              },
-            ),
-            ListTile(
-              title: Text("About Us"),
-              leading: Icon(Icons.info),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>About()));
-              },
-            ),
-             ListTile(
-              title: Text("Log out"),
-              leading: Icon(Icons.logout),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Login()));
-              },
-            ),
-          ],
-  ),
-),
+      
         body:_pages[_selectedIndex], 
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: Colors.teal,

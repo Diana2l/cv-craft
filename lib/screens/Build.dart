@@ -4,21 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:cv_craft/screens/compiled_cv.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class CVData {
-  String name = '';
-  String title = '';
-  String summary = '';
-  String email = '';
-  String phone = '';
-  String linkedin = '';
-  String address = '';
-  List<String> experience = [];
-  List<String> education = [];
-  List<String> skills = [];
-  List<String> projects = [];
-  List<String> languages = [];
-  List<String> certifications = [];
-}
+// Import the CVData from models
+import 'package:cv_craft/models/cv_data.dart' as cv_data;
+
+// Alias for backward compatibility
+typedef CVData = cv_data.CVData;
 
 class Build extends StatefulWidget {
   final double fontSize;
@@ -27,6 +17,7 @@ class Build extends StatefulWidget {
   final Color color;
   final String template;
   final String templateImage;
+  final Function(cv_data.CVData)? onCVDataUpdated; // Callback for CV data updates
 
   const Build({
     Key? key,
@@ -37,6 +28,7 @@ class Build extends StatefulWidget {
     required this.objective,
     required this.template,
     required this.templateImage,
+    this.onCVDataUpdated,
   }) : super(key: key);
 
   final String objective;
@@ -47,7 +39,7 @@ class Build extends StatefulWidget {
 
 class _BuildState extends State<Build> {
   final _formKey = GlobalKey<FormState>();
-  final _cvData = CVData();
+  final _cvData = cv_data.CVData();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -91,7 +83,12 @@ class _BuildState extends State<Build> {
             controller: _nameController,
             label: 'Full Name',
             icon: Icons.person_outline,
-            onChanged: (value) => _cvData.name = value,
+            onChanged: (value) {
+              setState(() {
+                _cvData.name = value;
+                _updateCVData();
+              });
+            },
             validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
           ),
           SizedBox(height: 16),
@@ -100,7 +97,12 @@ class _BuildState extends State<Build> {
             label: 'Email',
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
-            onChanged: (value) => _cvData.email = value,
+            onChanged: (value) {
+              setState(() {
+                _cvData.email = value;
+                _updateCVData();
+              });
+            },
             validator: (value) => !value!.contains('@') ? 'Enter a valid email' : null,
           ),
           SizedBox(height: 16),
@@ -109,21 +111,36 @@ class _BuildState extends State<Build> {
             label: 'Phone',
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
-            onChanged: (value) => _cvData.phone = value,
+            onChanged: (value) {
+              setState(() {
+                _cvData.phone = value;
+                _updateCVData();
+              });
+            },
           ),
           SizedBox(height: 16),
           _buildTextField(
             controller: _linkedinController,
             label: 'LinkedIn (optional)',
             icon: Icons.link_outlined,
-            onChanged: (value) => _cvData.linkedin = value,
+            onChanged: (value) {
+              setState(() {
+                _cvData.linkedin = value;
+                _updateCVData();
+              });
+            },
           ),
           SizedBox(height: 16),
           _buildTextField(
             controller: _addressController,
             label: 'Address',
             icon: Icons.location_on_outlined,
-            onChanged: (value) => _cvData.address = value,
+            onChanged: (value) {
+              setState(() {
+                _cvData.address = value;
+                _updateCVData();
+              });
+            },
           ),
         ],
       ),
@@ -137,7 +154,12 @@ class _BuildState extends State<Build> {
         controller: _summaryController,
         label: 'Write a brief summary about yourself',
         maxLines: 5,
-        onChanged: (value) => _cvData.summary = value,
+        onChanged: (value) {
+          setState(() {
+            _cvData.summary = value;
+            _updateCVData();
+          });
+        },
       ),
     );
   }
@@ -150,7 +172,12 @@ class _BuildState extends State<Build> {
         label: 'List your work experience (one per line)',
         hint: 'e.g., Job Title at Company (Year - Year)\n- Responsibility 1\n- Responsibility 2',
         maxLines: 5,
-        onChanged: (value) => _cvData.experience = value.split('\n'),
+        onChanged: (value) {
+          setState(() {
+            _cvData.experience = value.split('\n');
+            _updateCVData();
+          });
+        },
       ),
     );
   }
@@ -163,7 +190,12 @@ class _BuildState extends State<Build> {
         label: 'List your education (one per line)',
         hint: 'e.g., Degree, University, Year',
         maxLines: 5,
-        onChanged: (value) => _cvData.education = value.split('\n'),
+        onChanged: (value) {
+          setState(() {
+            _cvData.education = value.split('\n');
+            _updateCVData();
+          });
+        },
       ),
     );
   }
@@ -175,7 +207,12 @@ class _BuildState extends State<Build> {
         controller: _skillsController,
         label: 'List your skills (comma separated)',
         hint: 'e.g., Project Management, Team Leadership, JavaScript',
-        onChanged: (value) => _cvData.skills = value.split(',').map((e) => e.trim()).toList(),
+        onChanged: (value) {
+          setState(() {
+            _cvData.skills = value.split(',').map((e) => e.trim()).toList();
+            _updateCVData();
+          });
+        },
       ),
     );
   }
@@ -188,7 +225,12 @@ class _BuildState extends State<Build> {
         label: 'List your projects (one per line)',
         hint: 'e.g., Project Name - Description (Year)\n- Key achievement 1\n- Key achievement 2',
         maxLines: 5,
-        onChanged: (value) => _cvData.projects = value.split('\n'),
+        onChanged: (value) {
+          setState(() {
+            _cvData.projects = value.split('\n');
+            _updateCVData();
+          });
+        },
       ),
     );
   }
@@ -202,7 +244,12 @@ class _BuildState extends State<Build> {
             controller: _languagesController,
             label: 'Languages (comma separated)',
             hint: 'e.g., English (Fluent), Spanish (Intermediate)',
-            onChanged: (value) => _cvData.languages = value.split(',').map((e) => e.trim()).toList(),
+            onChanged: (value) {
+              setState(() {
+                _cvData.languages = value.split(',').map((e) => e.trim()).toList();
+                _updateCVData();
+              });
+            },
           ),
           SizedBox(height: 16),
           _buildTextField(
@@ -210,7 +257,12 @@ class _BuildState extends State<Build> {
             label: 'Certifications (one per line)',
             hint: 'e.g., Project Management Professional (PMP), 2020',
             maxLines: 3,
-            onChanged: (value) => _cvData.certifications = value.split('\n'),
+            onChanged: (value) {
+              setState(() {
+                _cvData.certifications = value.split('\n');
+                _updateCVData();
+              });
+            },
           ),
         ],
       ),
@@ -273,8 +325,20 @@ class _BuildState extends State<Build> {
     }
   }
 
-  void _submitForm() {
+  // Track the last update time to prevent too frequent updates
+  DateTime? _lastUpdateTime;
+  static const Duration _minUpdateInterval = Duration(milliseconds: 500);
+
+  void _updateCVData() {
+    final now = DateTime.now();
+    // Skip if we've updated too recently
+    if (_lastUpdateTime != null && now.difference(_lastUpdateTime!) < _minUpdateInterval) {
+      return;
+    }
+    _lastUpdateTime = now;
+
     if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
       // Update CV data with all fields
       _cvData.summary = _summaryController.text;
       _cvData.email = _emailController.text;
@@ -287,90 +351,83 @@ class _BuildState extends State<Build> {
       _cvData.projects = _projectsController.text.split('\n');
       _cvData.languages = _languagesController.text.split(',').map((e) => e.trim()).toList();
       _cvData.certifications = _certificationsController.text.split('\n');
-
-      // Navigate to preview with template information
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CompiledCVScreen(
-            cvData: _cvData,
-            objectives: _summaryController.text,
-            fontSize: widget.fontSize,
-            headerFontSize: widget.headerFontSize,
-            fontFamily: widget.fontFamily,
-            color: widget.color,
-            template: widget.template.toLowerCase(),
-            templateImage: widget.templateImage,
-          ),
-        ),
-      );
+      
+      // Notify parent widget about the CV data update
+      if (widget.onCVDataUpdated != null) {
+        widget.onCVDataUpdated!(_cvData);
+      }
     }
+  }
+
+  void _submitForm() {
+    _updateCVData();
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CompiledCVScreen(
+          cvData: _cvData,
+          objectives: _summaryController.text,
+          fontSize: widget.fontSize,
+          headerFontSize: widget.headerFontSize,
+          fontFamily: widget.fontFamily,
+          color: widget.color,
+          template: widget.template.toLowerCase(),
+          templateImage: widget.templateImage,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Create Your CV',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: ColorScheme.light(
+          primary: Colors.teal,
+          secondary: Colors.tealAccent,
         ),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
       ),
-      body: Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: Colors.teal,
-            secondary: Colors.tealAccent,
-          ),
-        ),
-        child: Form(
-          key: _formKey,
-          child: Stepper(
-            currentStep: _currentStep,
-            onStepContinue: _onStepContinue,
-            onStepCancel: _onStepCancel,
-            onStepTapped: (step) => setState(() => _currentStep = step),
-            steps: _steps,
-            controlsBuilder: (context, details) {
-              return Padding(
-                padding: const EdgeInsets.only(top: 24.0),
-                child: Row(
-                  children: [
-                    if (_currentStep != 0)
-                      TextButton(
-                        onPressed: details.onStepCancel,
-                        child: Text('BACK', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                      ),
-                    SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: details.onStepContinue,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        _currentStep == _steps.length - 1 ? 'PREVIEW CV' : 'NEXT',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
+      child: Form(
+        key: _formKey,
+        child: Stepper(
+          currentStep: _currentStep,
+          onStepContinue: _onStepContinue,
+          onStepCancel: _onStepCancel,
+          onStepTapped: (step) => setState(() => _currentStep = step),
+          steps: _steps,
+          controlsBuilder: (context, details) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Row(
+                children: [
+                  if (_currentStep != 0)
+                    TextButton(
+                      onPressed: details.onStepCancel,
+                      child: Text('BACK', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+                    ),
+                  SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: details.onStepContinue,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
+                    child: Text(
+                      _currentStep == _steps.length - 1 ? 'PREVIEW CV' : 'NEXT',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

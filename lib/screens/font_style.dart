@@ -1,6 +1,7 @@
-// ignore_for_file: prefer_const_constructors_in_immutables, use_key_in_widget_constructors, unused_import, prefer_const_constructors, sort_child_properties_last, library_private_types_in_public_api
+// ignore_for_file: prefer_const_constructors_in_immutables, use_key_in_widget_constructors, unused_import, prefer_const_constructors, sort_child_properties_last, library_private_types_in_public_api, file_names
 
 import 'package:cv_craft/auth/utility/globals.dart';
+import 'package:cv_craft/screens/cv_editor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -120,15 +121,19 @@ class _FontStylePageState extends State<FontStylePage> {
                 onPressed: () {
                   _savePreferences();
                   widget.onApply(_fontSize, _headerFontSize, _fontFamily, _selectedColor);
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => Build(
-                      fontSize: _parseFontSize(_fontSize),
-                      headerFontSize: _parseFontSize(_headerFontSize),
-                      fontFamily:  _fontFamily,
-                      color: _selectedColor, objective: '', template: '', templateImage: '',
-
-                    )),
+                    MaterialPageRoute(
+                      builder: (context) => CVEditorScreen(
+                        fontSize: _parseFontSize(_fontSize),
+                        headerFontSize: _parseFontSize(_headerFontSize),
+                        fontFamily: _fontFamily,
+                        color: _selectedColor,
+                        objective: '',
+                        template: 'modern', // Default template
+                        templateImage: 'assets/images/Modern.png', // Default template image
+                      ),
+                    ),
                   );
                 },
                 child: Text('Apply', style: TextStyle(fontFamily: _fontFamily)),

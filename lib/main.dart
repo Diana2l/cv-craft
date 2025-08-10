@@ -1,14 +1,15 @@
 // ignore_for_file: prefer_const_constructors, avoid_types_as_parameter_names, use_key_in_widget_constructors, library_private_types_in_public_api, unused_import, avoid_print
 
+import 'package:cv_craft/models/cv_data.dart';
+import 'package:cv_craft/screens/faq.dart';
 import 'package:cv_craft/screens/templates.dart';
 import 'package:flutter/material.dart';
-import 'package:cv_craft/screens/Build.dart';
+import 'package:cv_craft/screens/cv_editor_screen.dart';
 import 'package:cv_craft/auth/login.dart';
 import 'package:cv_craft/auth/register.dart';
-import 'package:cv_craft/models/ProfileModel.dart';
+import 'package:cv_craft/models/profile_model.dart';
 import 'package:cv_craft/screens/education.dart';
 import 'package:cv_craft/screens/experience.dart';
-import 'package:cv_craft/screens/FAQ.dart';
 import 'package:cv_craft/screens/objectives.dart';
 import 'package:cv_craft/screens/profile.dart';
 import 'package:cv_craft/screens/settings.dart';
@@ -63,10 +64,11 @@ class _MyAppState extends State<MyApp> {
           } else {
             return snapshot.data == true 
                 ? const OnboardingScreen() 
-                : const Templates();
+                : Templates();
           }
         },
       ),
+      initialRoute: '/auth/login',
       routes: {
         '/auth/register': (context) => Register(),
         '/auth/login': (context) => Login(),
@@ -75,7 +77,15 @@ class _MyAppState extends State<MyApp> {
         '/onboarding_screen': (context) => OnboardingScreen(),
         '/settings': (context) => Settings(onThemeChanged: (bool) {}),
         '/profile': (context) => Profile(),
-        '/build': (context) => Build(fontSize: 16, headerFontSize: 24, fontFamily: 'OpenSans', color:Colors.red, objective: '', template: '', templateImage: '',),
+        '/build': (context) => CVEditorScreen(
+              fontSize: 16,
+              headerFontSize: 24,
+              fontFamily: 'OpenSans',
+              color: Colors.teal,
+              objective: '',
+              template: 'modern',
+              templateImage: 'assets/images/Modern.png',
+            ),
         '/objective': (context) => Objectives(),
         '/personal': (context) => Profile(),
         '/education': (context) => Education(),

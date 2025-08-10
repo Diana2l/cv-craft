@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_nullable_for_final_variable_declarations
+// ignore_for_file: unnecessary_nullable_for_final_variable_declarations, strict_top_level_inference
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
