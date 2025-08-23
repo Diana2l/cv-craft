@@ -3,7 +3,6 @@ import 'package:cv_craft/screens/Build.dart';
 import 'package:cv_craft/screens/report_screen.dart';
 import 'package:cv_craft/models/cv_data.dart' as cv_data;
 
-// Import Build's CVData to access the type
 typedef BuildCVData = cv_data.CVData;
 
 class CVEditorScreen extends StatefulWidget {
@@ -32,8 +31,6 @@ class CVEditorScreen extends StatefulWidget {
 
 class _CVEditorScreenState extends State<CVEditorScreen> {
   late BuildCVData _cvData;
-  final PageController _pageController = PageController(initialPage: 0);
-  int _currentPage = 0;
 
   @override
   void initState() {
@@ -48,87 +45,69 @@ class _CVEditorScreenState extends State<CVEditorScreen> {
     });
   }
 
-  void _toggleView() {
-    final newPage = _currentPage == 0 ? 1 : 0;
-    _pageController.animateToPage(
-      newPage,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+  void _goToReportScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReportScreen(
+          cvData: _cvData,
+          onUpdate: () {},
+        ),
+      ),
     );
-    setState(() {
-      _currentPage = newPage;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _currentPage == 0 ? 'Build Your CV' : 'CV Completion Report',
+        title: const Text(
+          'Build Your CV',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.teal,
         elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(
-              _currentPage == 0 ? Icons.analytics_outlined : Icons.edit_outlined,
-              color: Colors.white,
+            icon: const Icon(Icons.analytics_outlined, color: Colors.white),
+            onPressed: _goToReportScreen,
+            tooltip: 'View Report',
+          ),
+        ],
+      ),
+      body: Build(
+        fontSize: widget.fontSize,
+        headerFontSize: widget.headerFontSize,
+        fontFamily: widget.fontFamily,
+        color: widget.color,
+        template: widget.template,
+        templateImage: widget.templateImage,
+        objective: widget.objective,
+        onCVDataUpdated: _updateCVData,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ReportScreen(
+                cvData: _cvData,
+                onUpdate: () {},
+              ),
             ),
-            onPressed: _toggleView,
-            tooltip: _currentPage == 0 ? 'View Report' : 'Back to Editor',
-          ),
-        ],
-      ),
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: (page) {
-          setState(() {
-            _currentPage = page;
-          });
+          );
         },
-        children: [
-          // Build Screen
-          Build(
-            fontSize: widget.fontSize,
-            headerFontSize: widget.headerFontSize,
-            fontFamily: widget.fontFamily,
-            color: widget.color,
-            template: widget.template,
-            templateImage: widget.templateImage,
-            objective: widget.objective,
-            onCVDataUpdated: _updateCVData,
-          ),
-          // Report Screen
-          ReportScreen(
-            cvData: _cvData,
-            onUpdate: () {
-              // This will be called when the user taps the refresh button on the report screen
-              // No need to manually trigger update as it's handled by the Build widget
-            },
-          ),
-        ],
+        icon: const Icon(Icons.analytics_outlined, color: Colors.white),
+        label: const Text('View Report', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.teal,
+        elevation: 4,
+        hoverColor: Colors.teal[700],
+        splashColor: Colors.teal[300],
       ),
-      floatingActionButton: _currentPage == 0
-          ? FloatingActionButton.extended(
-              onPressed: _toggleView,
-              icon: Icon(Icons.analytics_outlined),
-              label: Text('View Report'),
-              backgroundColor: Theme.of(context).primaryColor,
-            )
-          : null,
     );
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
   }
 }

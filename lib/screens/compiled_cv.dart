@@ -1,8 +1,15 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, prefer_const_constructors_in_immutables, must_be_immutable, library_private_types_in_public_api
+// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, prefer_const_constructors_in_immutables, must_be_immutable, library_private_types_in_public_api, deprecated_member_use
 
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cv_craft/screens/Build.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CompiledCVScreen extends StatelessWidget {
   final CVData cvData;
@@ -25,6 +32,95 @@ class CompiledCVScreen extends StatelessWidget {
     this.templateImage = '',
   });
 
+  Future<void> _generateAndSavePdf() async {
+    try {
+      // Request storage permission
+      var status = await Permission.storage.request();
+      if (!status.isGranted) {
+        throw Exception('Storage permission not granted');
+      }
+
+      // Create a PDF document
+      final pdf = pw.Document();
+      
+      // Add a page to the PDF
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Header(level: 0, child: pw.Text(cvData.name ?? 'CV', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold))),
+                pw.SizedBox(height: 10),
+                if (cvData.email?.isNotEmpty == true) pw.Text('Email: ${cvData.email}'),
+                if (cvData.phone?.isNotEmpty == true) pw.Text('Phone: ${cvData.phone}'),
+                if (cvData.address?.isNotEmpty == true) pw.Text('Address: ${cvData.address}'),
+                
+                pw.SizedBox(height: 20),
+                pw.Header(level: 1, child: pw.Text('Objective')),
+                pw.Text(objectives.isNotEmpty ? objectives : 'No objective provided'),
+                
+                if (cvData.education?.isNotEmpty == true) ...[
+                  pw.SizedBox(height: 20),
+                  pw.Header(level: 1, child: pw.Text('Education')),
+                  ...cvData.education!.map((edu) => pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(edu['degree'] ?? '', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text('${edu['institution'] ?? ''} - ${edu['year'] ?? ''}'),
+                      if (edu['description']?.isNotEmpty == true) pw.Text(edu['description'] ?? ''),
+                      pw.SizedBox(height: 5),
+                    ],
+                  )).toList(),
+                ],
+                
+                if (cvData.experience?.isNotEmpty == true) ...[
+                  pw.SizedBox(height: 20),
+                  pw.Header(level: 1, child: pw.Text('Experience')),
+                  ...cvData.experience!.map((exp) => pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(exp['title'] ?? '', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text('${exp['company'] ?? ''} - ${exp['duration'] ?? ''}'),
+                      if (exp['description']?.isNotEmpty == true) pw.Text(exp['description'] ?? ''),
+                      pw.SizedBox(height: 5),
+                    ],
+                  )).toList(),
+                ],
+                
+                if (cvData.skills?.isNotEmpty == true) ...[
+                  pw.SizedBox(height: 20),
+                  pw.Header(level: 1, child: pw.Text('Skills')),
+                  pw.Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: cvData.skills!.map((skill) => pw.Chip(
+                      label: pw.Text(skill),
+                    )).toList(),
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
+      );
+
+      // Get the application documents directory
+      final output = await getTemporaryDirectory();
+      final file = File('${output.path}/cv_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      
+      // Save the PDF to a file
+      await file.writeAsBytes(await pdf.save());
+      
+      // Share the file
+      await Share.shareFiles([file.path], text: 'My CV');
+      
+      return file.path;
+    } catch (e) {
+      throw Exception('Failed to generate PDF: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,11 +134,45 @@ class CompiledCVScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.download, color: Colors.white),
-            onPressed: () {
-              // TODO: Implement download functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Downloading CV...')),
-              );
+            onPressed: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              try {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(content: Text('Generating PDF...')),
+                );
+                
+                final filePath = await _generateAndSavePdf();
+                
+                if (!context.mounted) return;
+                
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('CV saved successfully!'),
+                    duration: Duration(seconds: 2),
+                    action: SnackBarAction(
+                      label: 'Open',
+                      onPressed: () {
+                        // Open the file with the default app
+                        // You can use the 'open_file' package for better file handling
+                        // For now, we'll just show a message
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(content: Text('Opening file...')),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+                
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to generate PDF: $e'),
+                    backgroundColor: Colors.red,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              }
             },
           ),
         ],
