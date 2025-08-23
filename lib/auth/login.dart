@@ -178,7 +178,37 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
         );
       }, test: (e) => e is FirebaseAuthException);
 
-      // Check if email is verified
+      // Get user document from Firestore first
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        // Create user document if it doesn't exist (for backward compatibility)
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'uid': userCredential.user!.uid,
+          'email': userCredential.user!.email,
+          'displayName': userCredential.user!.displayName ?? '',
+          'role': _selectedRole!.toLowerCase(),
+          'createdAt': FieldValue.serverTimestamp(),
+          'lastLoginAt': FieldValue.serverTimestamp(),
+          'status': 'active',
+          'emailVerified': userCredential.user!.emailVerified,
+        });
+      }
+
+      // Get updated user document
+      final updatedUserDoc = await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      final userData = updatedUserDoc.data() as Map<String, dynamic>;
+      final userRole = (userData['role'] as String?)?.toLowerCase() ?? 'user';
+      final selectedRole = _selectedRole?.toLowerCase() ?? '';
+
+      // Check if email verification is required (only for new accounts)
       if (!userCredential.user!.emailVerified) {
         await _sendEmailVerification(userCredential.user!);
         _showEmailVerificationDialog();
@@ -186,43 +216,19 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
         return;
       }
 
-      // Get user document from Firestore
-      final userDoc = await _firestore
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .get();
-
-      if (!userDoc.exists) {
-        throw FirebaseAuthException(
-          code: 'user-not-found',
-          message: 'No user record found. Please register first.',
-        );
-      }
-
-      // Get user data
-      final userData = userDoc.data() as Map<String, dynamic>;
-      final userRole = (userData['role'] as String?)?.toLowerCase() ?? 'user';
-      final selectedRole = _selectedRole?.toLowerCase() ?? '';
-
       // Check if user is active
       if (userData['status'] == 'suspended') {
+        await _auth.signOut();
         throw FirebaseAuthException(
           code: 'user-disabled',
           message: 'This account has been suspended. Please contact support.',
         );
       }
 
-      // Validate role
-      if (selectedRole != userRole) {
-        throw FirebaseAuthException(
-          code: 'permission-denied',
-          message: 'You are not authorized to access the ${_selectedRole} role.',
-        );
-      }
-
       // Update last login timestamp
       await _firestore.collection('users').doc(userCredential.user!.uid).update({
         'lastLoginAt': FieldValue.serverTimestamp(),
+        'emailVerified': userCredential.user!.emailVerified,
       });
 
       // Save credentials if remember me is checked
@@ -300,11 +306,18 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   }
 
   void _navigateBasedOnRole(String role) {
-    final route = role == 'admin' 
-        ? MaterialPageRoute(builder: (context) => const AdminDashboard())
-        : MaterialPageRoute(builder: (context) => Userpage());
-        
-    Navigator.of(context).pushAndRemoveUntil(route, (route) => false);
+    // Ensure we have a valid context
+    if (!mounted) return;
+    
+    // Clear the navigation stack and navigate to the appropriate screen
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => role == 'admin' 
+            ? const AdminDashboard() 
+            : Userpage(),
+      ),
+      (route) => false,
+    );
   }
 
   void _handleAuthError(FirebaseAuthException e) {
